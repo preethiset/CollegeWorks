@@ -1,0 +1,7 @@
+####To check the disk space, ordered by top 5
+
+##du -hs * | sort -rh | head -5
+
+#### To unzip the .xz file and keep the original 
+
+## unxz -k (filename)1950.txt.xz
