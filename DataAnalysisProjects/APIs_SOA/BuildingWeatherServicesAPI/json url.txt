@@ -1,0 +1,1 @@
+http://api.wunderground.com/api/2e02969defcb4a64/geolookup/conditions/q/Australia/Sydney.json

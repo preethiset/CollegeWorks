@@ -1,0 +1,81 @@
+1./*Analysis of a particular product's selling range by its Quarter results in the city British Columbia, Canada.*/
+
+SELECT p.product_name, p.product_category AS Category, c.home_address_state AS State , c.home_address_country AS Country, 
+	d.the_year AS In_Year,d.the_quarter AS In_Quarter, SUM(f.order_qty) AS Total_Order, SUM(f.unit_price) AS Total_price
+    FROM fact_sales f, dim_product p, dim_customer c, dim_date d
+    WHERE f.product_skey = p.product_skey
+    AND f.customer_skey = c.customer_skey
+    AND f.date_skey = d.date_skey
+    AND p.product_id = 859
+    AND c.home_address_country= 'Canada'
+    GROUP BY p.product_name,p.product_category, c.home_address_state, d.the_year, d.the_quarter, f.unit_price
+    LIMIT 5
+
+2./*Analysis of Region wise over all sales report for the Category Bike in the year 2005*/
+SELECT c.home_address_country AS Country, p.product_category AS Category ,p.product_name,c.regional_group AS region,
+	d.the_year,
+	SUM(f.order_qty) AS TotalQtyOrdered, 
+	SUM(unit_price) AS TotalAmtPurchased, 
+	AVG(f.unit_price) AS AvgUnitsPurchased,
+	SUM(c.customer_id) AS NoOfCustomers
+FROM 	fact_sales f,
+	dim_customer c,
+	dim_product p,
+	dim_date d
+WHERE 	f.customer_skey= c.customer_skey
+AND   	f.product_skey= p.product_skey
+AND 	f.date_skey=d.date_skey
+AND 	product_category='Bikes'
+GROUP BY c.home_address_country, p.product_category,c.regional_group
+
+3./*Analysis to find the top 5 products that are sold in city wise in Australia between the year 2007 and 2008*/
+SELECT p.product_name AS Top5Products, SUM(f.order_qty) AS TotalProductsSold,
+	c.home_address_state AS State,
+	c.home_address_city AS City,d.the_year AS In_Year
+ FROM 	fact_sales f, dim_product p, dim_customer c, dim_date d
+ WHERE 	f.product_skey = p.product_skey
+ AND 	f.customer_skey = c.customer_skey
+ AND 	f.date_skey = d.date_skey
+ AND 	c.home_address_country='Australia'
+GROUP BY p.product_name, p.product_id , d.the_year
+ORDER BY SUM(f.order_qty) DESC
+LIMIT 5
+
+4./*Analyis to show the Total No of Males and Females from no of customers who ordered specific category region wise in the year 2007*/
+SELECT c.regional_group, c.home_address_city,p.product_category,
+	SUM(f.unit_price) AS AmoutPurchased,
+	MAX(d.the_year) AS Inyear,
+	COUNT(CASE WHEN c.gender='M' THEN 1 END) AS NoOfMales,
+	COUNT(CASE WHEN gender='F' THEN 1 END) AS NoOfFemales,
+	COUNT(*) AS NumberOfCustomers
+FROM 	fact_sales f,
+	dim_customer c,
+	dim_product p,
+	dim_date d
+WHERE 	f.customer_skey= c.customer_skey
+AND	f.product_skey= p.product_skey
+AND 	f.date_skey=d.date_skey
+AND 	d.the_year= '2007' AND '2006'
+GROUP BY 
+	c.home_address_country, p.product_category,c.gender, d.the_year
+
+5./*Analysis of High Priced product that is ordered on the same day by customers in United States*/
+
+SELECT c.customer_id,f.sales_order_number,c.home_address_state AS State,c.home_address_city AS City,
+	p.product_category AS Category, p.product_name AS HighPricedProduct,	
+	MAX(f.unit_price)AS UnitPrice, d.the_date AS DateOrdered, 
+	SUM(f.unit_price*f.order_qty) AS AmtPurchased
+FROM 	fact_sales f,
+	dim_customer c,
+	dim_product p,
+	dim_date d
+WHERE 	f.customer_skey= c.customer_skey
+AND	f.product_skey= p.product_skey
+AND	f.date_skey=d.date_skey
+AND 	c.home_address_country ='United States'
+AND  	c.customer_id  IN 
+       (SELECT DISTINCT c.customer_id )
+ AND 	f.sales_order_number IN
+	(SELECT DISTINCT f.sales_order_number)
+ AND 	d.the_date='2007-07-01'
+GROUP BY c.home_address_state, c.home_address_country, p.product_category
